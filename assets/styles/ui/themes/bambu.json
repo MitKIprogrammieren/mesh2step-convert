@@ -53,11 +53,11 @@
     "sel_edge": "#00ae42",
     "sel_edge_rim": "#a8e6c0",
     "sel_face": "#45c27a",
-    "sel_profile": "#00813a",
+    "sel_profile": "#00703a",
     "sel_profile_edge": "#00ae42",
     "sel_vertex": "#009539",
     "selected_bg": "#dff4e7",
-    "selected_ink": "#00813a",
+    "selected_ink": "#00703a",
     "subheading_bg": "#f7f7f7",
     "text": "#262e30",
     "text_dim": "#6b7578",
@@ -74,5 +74,48 @@
     "radius_xl": 10,
     "control_radius": 4,
     "sketch_mode_radius": 6
+  },
+  "icon_palette": {
+    "ink": "#262628",
+    "line": "#505054",
+    "passive-1": "#dee5ee",
+    "passive-2": "#aeb5bd",
+    "passive-3": "#81878f",
+    "guide": "#6e6e73",
+    "solid": [
+      "#d9f5e3",
+      "#5fcf8c",
+      "#00ae42"
+    ],
+    "surface": [
+      "#fde3c4",
+      "#daa662",
+      "#a06f28"
+    ],
+    "mesh": [
+      "#fee7a2",
+      "#d1ad37",
+      "#937717"
+    ],
+    "form": [
+      "#ede2ff",
+      "#c39afc",
+      "#8b62bf"
+    ],
+    "sketch": [
+      "#b1fdc5",
+      "#72c78b",
+      "#388e56"
+    ],
+    "constraint": [
+      "#fee0dd",
+      "#f98e87",
+      "#d73339"
+    ],
+    "construction": [
+      "#fde3c4",
+      "#daa662",
+      "#a06f28"
+    ]
   }
 }

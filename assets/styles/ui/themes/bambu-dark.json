@@ -74,5 +74,48 @@
     "radius_xl": 10,
     "control_radius": 4,
     "sketch_mode_radius": 6
+  },
+  "icon_palette": {
+    "ink": "#1c1e21",
+    "line": "#e0e2e5",
+    "passive-1": "#bfc1c5",
+    "passive-2": "#939599",
+    "passive-3": "#6a6c6f",
+    "guide": "#a0a6b0",
+    "solid": [
+      "#1f4a31",
+      "#3fc477",
+      "#5fd88f"
+    ],
+    "surface": [
+      "#fcc28e",
+      "#dea572",
+      "#c38c59"
+    ],
+    "mesh": [
+      "#e8cd7d",
+      "#cab060",
+      "#b19747"
+    ],
+    "form": [
+      "#d5c4fd",
+      "#b9a7df",
+      "#a08fc4"
+    ],
+    "sketch": [
+      "#b0dbc0",
+      "#94bea4",
+      "#7ba58b"
+    ],
+    "constraint": [
+      "#febbb9",
+      "#fb8e8d",
+      "#e57071"
+    ],
+    "construction": [
+      "#fcc28e",
+      "#dea572",
+      "#c38c59"
+    ]
   }
 }
