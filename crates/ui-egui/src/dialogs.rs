@@ -214,6 +214,8 @@ crate::dialog_descriptor::dialog_descriptors! {
             /// An imported mesh body rebuilt as editable faces (#3001).
             MeshConvert {
                 tolerance: String,
+                /// The Mesh2STEP conversion (any shape) instead of the prismatic one.
+                general: bool,
             },
             /// A construction axis, point or plane made from picks alone (#2474): input `i` is the
             /// command's parameter `keys[i]`, and `t` (along a path) when it takes one.
@@ -720,7 +722,9 @@ impl Dialog {
                 Kind::PathPattern { count: "4".into(), spacing: "20 mm".into() },
                 vec![SelInput::new("Objects", BODIES, true), SelInput::new("Path", CURVES, true)],
             ),
-            "mesh.convert" => Dialog::new(Kind::MeshConvert { tolerance: "0.05 mm".into() }, vec![SelInput::new("Mesh body", BODIES, false)]),
+            "mesh.convert" => {
+                Dialog::new(Kind::MeshConvert { tolerance: "0 mm".into(), general: true }, vec![SelInput::new("Mesh body", BODIES, false)])
+            }
             "construct.plane.midplane" => Dialog::new(
                 Kind::Midplane,
                 vec![SelInput::new("First plane", PLANES | PLANAR_FACES, false), SelInput::new("Second plane", PLANES | PLANAR_FACES, false)],
@@ -3585,13 +3589,14 @@ fn dialog_commands(app: &SolveApp, d: &Dialog) -> Result<Vec<(String, Value)>, S
             let base = plane_arg(app, sels(d, 0).first())?;
             ("construct.plane.offset", json!({"base": base}))
         }
-        Kind::MeshConvert { tolerance } => {
+        Kind::MeshConvert { tolerance, general } => {
             need(0, "the mesh body")?;
             let body = match sels(d, 0).first() {
                 Some(Sel::Body { name }) => name.clone(),
                 _ => return Err("pick the mesh body to convert".into()),
             };
-            ("mesh.convert", json!({"body": body, "tolerance": tolerance}))
+            let method = if *general { "mesh2step" } else { "prismatic" };
+            ("mesh.convert", json!({"body": body, "tolerance": tolerance, "method": method}))
         }
         Kind::Midplane => {
             need(0, "the first plane")?;

@@ -680,8 +680,24 @@ fn additional_rows(app: &mut SolveApp, d: &mut Dialog, ui: &mut egui::Ui) -> boo
         Kind::PathPlane { t, .. } => {
             enter |= expr_row(ui, "Position (0 to 1)", t);
         }
-        Kind::MeshConvert { tolerance } => {
+        Kind::MeshConvert { tolerance, general } => {
+            form_row(ui, "Method", |ui| {
+                let mut i = usize::from(*general);
+                ui_kit::segmented(ui, &mut i, &["Prismatic", "Mesh2STEP"], Default::default());
+                if (i == 1) != *general {
+                    *general = i == 1;
+                    // Each method's own default: automatic for Mesh2STEP, 0.05 mm for prismatic.
+                    *tolerance = if *general { "0 mm" } else { "0.05 mm" }.into();
+                }
+            });
             form_row(ui, "Tolerance", |ui| enter |= field(ui, tolerance));
+            let note = if *general {
+                "Any shape: planes, cylinders, cones, spheres, tori and freeform faces. 0 mm = automatic."
+            } else {
+                "Constant-section parts only (one profile extruded straight)."
+            };
+            let t = Tokens::get();
+            ui.label(RichText::new(tr(note)).color(t.text_dim).size(t.font_small));
         }
         Kind::Construct { t: Some(t), .. } => {
             form_row(ui, "Position (0 to 1)", |ui| enter |= field(ui, t));

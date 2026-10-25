@@ -274,3 +274,71 @@ fn conversion_from_another_branch_names_the_component_to_activate() {
     assert_eq!(s.doc.to_json(), before);
     assert_eq!((s.active_component, s.active_occurrence_path.clone()), context);
 }
+
+/// A mesh body made from a kernel solid's tessellation.
+fn imported(body: &solidcraft_kernel::Body, tolerance: f64) -> Session {
+    let mesh = body.tessellate(tolerance).unwrap();
+    let mut doc = Document::default();
+    doc.add_feature(
+        FeatureKind::MeshImport {
+            file: "public-safe-part.stl".into(),
+            meshes: vec![MeshData {
+                name: "Mesh".into(),
+                positions: mesh.positions.iter().flat_map(|p| [p.x, p.y, p.z]).collect(),
+                triangles: mesh.triangles.iter().flatten().copied().collect(),
+                color: None,
+            }],
+        },
+        Some("Imported mesh"),
+    )
+    .unwrap();
+    Session::new(doc)
+}
+
+/// The Mesh2STEP method rebuilds a shape the prismatic one refuses (a sphere: no constant
+/// section) as a solid of about the sphere's volume, saves its method and reopens cold.
+#[test]
+fn mesh2step_method_converts_a_sphere_the_prismatic_method_refuses() {
+    let sphere = solidcraft_kernel::sphere(Vec3::ZERO, 10.).unwrap();
+    let mut s = imported(&sphere, 0.01);
+    assert!(s.execute("mesh.convert", &json!({"body":"Mesh","tolerance":"0.05 mm"})).is_err(), "prismatic refuses a sphere");
+    run(&mut s, "mesh.convert", json!({"body":"Mesh","method":"mesh2step"}));
+    let exact = 4. / 3. * std::f64::consts::PI * 1000.;
+    let check = |s: &mut Session| {
+        let state = s.model.state();
+        let body = &state.body("Mesh").unwrap().body;
+        assert!(!body.is_mesh());
+        assert!(s.model.results.iter().all(|r| r.error.is_none()), "{:?}", s.model.results);
+        let v = volume(s);
+        assert!((v - exact).abs() / exact < 0.01, "volume {v}, sphere {exact}");
+    };
+    check(&mut s);
+    assert!(s.doc.to_json().contains("\"method\": \"mesh2step\"") || s.doc.to_json().contains("\"method\":\"mesh2step\""));
+    let mut cold = Session::new(Document::from_json(&s.doc.to_json()).unwrap());
+    check(&mut cold);
+}
+
+/// A box through Mesh2STEP: six planar faces, the box's volume, editable like any solid.
+#[test]
+fn mesh2step_method_rebuilds_a_box_with_six_faces() {
+    let cube = solidcraft_kernel::box_solid(Vec3::ZERO, Vec3::new(10., 20., 30.)).unwrap();
+    let mut s = imported(&cube, 0.01);
+    run(&mut s, "mesh.convert", json!({"body":"Mesh","method":"mesh2step","tolerance":"0.01 mm"}));
+    let state = s.model.state();
+    let body = &state.body("Mesh").unwrap().body;
+    assert!(!body.is_mesh());
+    assert_eq!(body.faces(0.01).unwrap().len(), 6);
+    assert!((volume(&mut s) - 6000.).abs() < 1e-3);
+    run(&mut s, "solid.fillet", json!({"body":"Mesh","edges":[[0,20,15]],"radius":2}));
+    assert!(volume(&mut s) < 6000.);
+}
+
+#[test]
+fn an_unknown_conversion_method_is_refused() {
+    let mut s = imported_box();
+    let before = s.doc.to_json();
+    for params in [json!({"body":"Mesh","method":"magic"}), json!({"body":"Mesh","method":"mesh2step","tolerance":"9 mm"})] {
+        assert!(s.execute("mesh.convert", &params).is_err(), "{params}");
+        assert_eq!(s.doc.to_json(), before);
+    }
+}

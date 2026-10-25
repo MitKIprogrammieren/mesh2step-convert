@@ -1,0 +1,9 @@
+[package]
+name = "mesh2step-core"
+version = "1.6.0"
+edition = "2021"
+description = "Wandelt STL/3MF-Dreiecksnetze in STEP-Volumenkörper mit echten Flächen um"
+license = "MIT"
+publish = false
+
+[dependencies]

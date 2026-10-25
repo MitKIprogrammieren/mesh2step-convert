@@ -24,6 +24,7 @@ web-time = { workspace = true }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 rayon = { workspace = true }
+mesh2step-core = { workspace = true }
 
 [dev-dependencies]
 # The vendored crate tests never build in CI, so its equivalence checks run from kernel tests.

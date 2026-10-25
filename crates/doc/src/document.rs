@@ -1633,11 +1633,15 @@ pub enum FeatureKind {
         #[serde(default, skip_serializing_if = "Vec::is_empty")]
         skip: Vec<u64>,
     },
-    /// Rebuild an upstream constant-section mesh with analytic planar/cylindrical faces.
+    /// Rebuild an upstream mesh as a B-rep: by default a constant-section mesh with analytic
+    /// planar/cylindrical faces; with `method` `mesh2step` any shape (Mesh2STEP converter).
     MeshConvert {
         body: BodyName,
         #[walk(length = "Tolerance")]
         tolerance: Expr,
+        /// `""` (prismatic, the default and every design before it) or `mesh2step`.
+        #[serde(default, skip_serializing_if = "String::is_empty")]
+        method: String,
     },
     /// Mesh bodies imported from a 3MF or STL file, embedded in the design.
     MeshImport {

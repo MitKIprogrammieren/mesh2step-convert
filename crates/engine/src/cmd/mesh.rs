@@ -16,7 +16,7 @@ use crate::{
 pub static COMMANDS: &[CommandSpec] = &[
     CommandSpec::new("mesh.convert", "Convert Mesh", convert)
         .icon("import")
-        .params("body?: mesh body name (default: the selected mesh body); tolerance?: length expression (default 0.05 mm): reconstruct a closed constant-section mechanical mesh as editable planar and cylindrical faces, with a parametric timeline feature in the mesh body's owning component (the active component must be that component or an ancestor; otherwise activate the named component first); the active component is unchanged; name?"),
+        .params("body?: mesh body name (default: the selected mesh body); method?: \"prismatic\" (default: a closed constant-section mechanical mesh as editable planar and cylindrical faces) or \"mesh2step\" (any shape: planes, cylinders, cones, spheres, tori and B-spline patches; desktop only); tolerance?: length expression (default 0.05 mm for prismatic, 0 mm = automatic for mesh2step): reconstruct the mesh body as a B-rep, with a parametric timeline feature in the mesh body's owning component (the active component must be that component or an ancestor; otherwise activate the named component first); the active component is unchanged; name?"),
 ];
 
 /// The mesh body to convert: `body`, else the one selected body.
@@ -45,12 +45,18 @@ fn convert(s: &mut Session, p: &Value) -> Result<Value> {
         let name = s.doc.components.iter().find(|c| c.id == owner).map(|c| c.name.as_str()).unwrap_or(s.doc.name.as_str());
         return Err(bad(cmd, format!("activate component '{name}' first")));
     }
-    let tolerance = expr(p, "tolerance").unwrap_or_else(|| "0.05 mm".into());
+    let method = match str_(p, "method").map(str::trim).unwrap_or("") {
+        "" | "prismatic" => String::new(),
+        "mesh2step" => "mesh2step".to_owned(),
+        other => return Err(bad(cmd, format!("unknown method `{other}` (prismatic or mesh2step)"))),
+    };
+    let default_tolerance = if method.is_empty() { "0.05 mm" } else { "0 mm" };
+    let tolerance = expr(p, "tolerance").unwrap_or_else(|| default_tolerance.into());
     check_expr(s, &tolerance, Kind::Length, cmd, "tolerance")?;
     // Conversion edits the component definition, independent of its occurrence placement.
     let active_component = std::mem::replace(&mut s.active_component, owner);
     let active_occurrence_path = s.active_occurrence_path.take();
-    let result = add_feature(s, p, FeatureKind::MeshConvert { body: body.into(), tolerance });
+    let result = add_feature(s, p, FeatureKind::MeshConvert { body: body.into(), tolerance, method });
     s.active_component = active_component;
     s.active_occurrence_path = active_occurrence_path;
     result

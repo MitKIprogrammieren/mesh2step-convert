@@ -4,6 +4,14 @@ Copies of third-party crates that SolidCraft builds with local fixes, wired in w
 `[patch.crates-io]` in the workspace `Cargo.toml`. They keep their own licence; changed lines
 are marked `SolidCraft:` in the source.
 
+## mesh2step-core 1.6.0 (MIT, © MitKIprogrammieren, private repo mesh2step @ 8caee09)
+
+The mesh-to-STEP converter of Mesh2STEP, unchanged. `solidcraft-kernel` calls
+`mesh2step_core::convert_meshes` for `mesh.convert` with method `mesh2step` (any shape: planes,
+cylinders, cones, spheres, tori, B-splines) and reads the STEP text it writes back with
+`step_import`. Desktop only (it starts threads); the web app keeps the prismatic method.
+To update, copy `core/src` and `core/Cargo.toml` from the mesh2step repo over this folder.
+
 ## truck-shapeops 0.4.0 (Apache-2.0, © RICOS Co. Ltd., https://github.com/ricosjp/truck)
 
 Changes:

@@ -6951,14 +6951,27 @@ fn eval_feature(doc: &Document, vals: &BTreeMap<String, Value>, f: &Feature, st:
             }
             Ok(())
         }
-        FeatureKind::MeshConvert { body, tolerance } => {
+        FeatureKind::MeshConvert { body, tolerance, method } => {
             let tolerance = val(vals, tolerance, Kind::Length)?;
             let index = st.bodies.iter().position(|b| &b.name == body).ok_or_else(|| DocError::Unknown(format!("body `{body}`")))?;
             let source = st.bodies.get(index).ok_or_else(|| DocError::Unknown(format!("body `{body}`")))?;
             if doc.model_body_component(source) != f.component {
                 return Err(DocError::Invalid("activate the mesh body's component before converting it".into()));
             }
-            let converted = kernel::convert_prismatic_mesh(&source.body, tolerance)?;
+            let converted = match method.as_str() {
+                "" | "prismatic" => kernel::convert_prismatic_mesh(&source.body, tolerance)?,
+                "mesh2step" => {
+                    let (converted, info) = kernel::convert_general_mesh(&source.body, Some(tolerance))?;
+                    if !info.warnings.is_empty() {
+                        let n = info.warnings.len();
+                        let shown: Vec<&str> = info.warnings.iter().take(3).map(String::as_str).collect();
+                        let more = if n > 3 { format!(" (+{} more)", n - 3) } else { String::new() };
+                        *warning = Some(format!("{}{more}", shown.join("; ")));
+                    }
+                    converted
+                }
+                other => return Err(DocError::Invalid(format!("unknown mesh conversion method `{other}` (prismatic or mesh2step)"))),
+            };
             let converted = converted.with_color(source.body.color());
             let result = ModelBody::new(source.name.clone(), converted, f.id);
             let target = st.bodies.get_mut(index).ok_or_else(|| DocError::Unknown(format!("body `{body}`")))?;

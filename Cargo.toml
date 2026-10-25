@@ -28,6 +28,8 @@ solidcraft-space-mouse = { path = "crates/space-mouse" }
 solidcraft-mcp = { path = "crates/mcp" }
 solidcraft-derive = { path = "crates/derive" }
 solidcraft-3dx-client = { path = "crates/threedx-client" }
+# general mesh-to-B-rep conversion (MIT; vendor/README.md). Only crates/kernel uses it, desktop only.
+mesh2step-core = { path = "vendor/mesh2step-core" }
 
 # foundation
 thiserror = "2"
