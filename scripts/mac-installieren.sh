@@ -26,11 +26,14 @@ github_anmeldung() {
     if command -v brew >/dev/null 2>&1; then
       brew install gh
     else
-      local v tmp
-      v=$(curl -fsSL https://api.github.com/repos/cli/cli/releases/latest | sed -n 's/.*"tag_name": *"v\([^"]*\)".*/\1/p' | head -1)
-      [ -n "$v" ] || fehler "GitHub CLI nicht gefunden. Bitte von https://cli.github.com installieren und das Skript erneut starten."
+      local v tmp a
+      # Neueste Version aus der Weiterleitung von …/releases/latest (…/tag/v2.x.y)
+      v=$(curl -fsSLI -o /dev/null -w '%{url_effective}' https://github.com/cli/cli/releases/latest 2>/dev/null | sed -n 's|.*/tag/v||p' || true)
+      [ -n "$v" ] || v=2.103.2
+      if [ "$(uname -m)" = arm64 ]; then a=arm64; else a=amd64; fi
       tmp=$(mktemp -d)
-      curl -fsSL -o "$tmp/gh.zip" "https://github.com/cli/cli/releases/download/v$v/gh_${v}_macOS_universal.zip"
+      curl -fsSL -o "$tmp/gh.zip" "https://github.com/cli/cli/releases/download/v$v/gh_${v}_macOS_${a}.zip" ||
+        fehler "GitHub CLI $v konnte nicht geladen werden. Bitte von https://cli.github.com installieren und das Skript erneut starten."
       ditto -x -k "$tmp/gh.zip" "$tmp"
       mkdir -p "$HOME/.local/bin"
       cp "$tmp"/gh_*/bin/gh "$HOME/.local/bin/gh"
