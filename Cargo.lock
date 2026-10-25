@@ -2464,6 +2464,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "mesh2step-core"
+version = "1.6.0"
+
+[[package]]
 name = "minisign-verify"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4356,6 +4360,7 @@ name = "solidcraft-kernel"
 version = "0.22.0"
 dependencies = [
  "log",
+ "mesh2step-core",
  "proptest",
  "rayon",
  "serde",
