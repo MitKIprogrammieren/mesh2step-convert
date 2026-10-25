@@ -4,6 +4,8 @@
 #
 #   bash mac-installieren.sh            bauen und installieren (bzw. aktualisieren)
 #
+# Beim ersten Mal öffnet sich der Browser für die GitHub-Anmeldung (kein Passwort im Terminal).
+#
 # Der Code liegt danach in ~/SolidCraft-Mesh2STEP. Erneut ausführen = neueste Version holen.
 set -euo pipefail
 
@@ -16,6 +18,32 @@ schritt() { printf '\n\033[1;34m==> %s\033[0m\n' "$*"; }
 fehler() { printf '\n\033[1;31mFehler: %s\033[0m\n' "$*" >&2; exit 1; }
 
 [ "$(uname -s)" = Darwin ] || fehler "Dieses Skript ist nur für macOS."
+
+# GitHub-Anmeldung ohne Benutzername/Passwort: einmal im Browser anmelden (GitHub CLI),
+# danach nutzt git diese Anmeldung automatisch.
+github_anmeldung() {
+  if ! command -v gh >/dev/null 2>&1; then
+    if command -v brew >/dev/null 2>&1; then
+      brew install gh
+    else
+      local v tmp
+      v=$(curl -fsSL https://api.github.com/repos/cli/cli/releases/latest | sed -n 's/.*"tag_name": *"v\([^"]*\)".*/\1/p' | head -1)
+      [ -n "$v" ] || fehler "GitHub CLI nicht gefunden. Bitte von https://cli.github.com installieren und das Skript erneut starten."
+      tmp=$(mktemp -d)
+      curl -fsSL -o "$tmp/gh.zip" "https://github.com/cli/cli/releases/download/v$v/gh_${v}_macOS_universal.zip"
+      ditto -x -k "$tmp/gh.zip" "$tmp"
+      mkdir -p "$HOME/.local/bin"
+      cp "$tmp"/gh_*/bin/gh "$HOME/.local/bin/gh"
+      rm -rf "$tmp"
+    fi
+    export PATH="$HOME/.local/bin:$PATH"
+  fi
+  if ! gh auth status -h github.com >/dev/null 2>&1; then
+    echo "Einmalige Anmeldung bei GitHub: Es öffnet sich der Browser, dort den angezeigten Code eingeben."
+    gh auth login -h github.com --web --git-protocol https
+  fi
+  gh auth setup-git -h github.com
+}
 
 # 1. Apple-Entwicklerwerkzeuge (Compiler, git)
 schritt "Entwicklerwerkzeuge prüfen"
@@ -41,6 +69,7 @@ rustup target add "$TARGET" >/dev/null
 
 # 3. Code holen oder aktualisieren
 schritt "Code holen"
+github_anmeldung
 if [ -d "$SRC/.git" ]; then
   git -C "$SRC" fetch --depth 1 origin "$BRANCH"
   git -C "$SRC" checkout -q -B "$BRANCH" FETCH_HEAD
