@@ -342,3 +342,24 @@ fn an_unknown_conversion_method_is_refused() {
         assert_eq!(s.doc.to_json(), before);
     }
 }
+
+/// Automatic: a straight extrusion takes the exact prismatic reconstruction, a sphere falls back
+/// to Mesh2STEP, and each timeline item is named after the method it took.
+#[test]
+fn auto_method_picks_prismatic_for_a_box_and_mesh2step_for_a_sphere() {
+    let cube = solidcraft_kernel::box_solid(Vec3::ZERO, Vec3::new(10., 20., 30.)).unwrap();
+    let mut s = imported(&cube, 0.01);
+    run(&mut s, "mesh.convert", json!({"body":"Mesh","method":"auto"}));
+    assert!(!s.model.state().body("Mesh").unwrap().body.is_mesh());
+    assert!((volume(&mut s) - 6000.).abs() < 1e-3);
+    assert!(s.doc.to_json().contains("Convert Mesh (prismatic)"));
+
+    let sphere = solidcraft_kernel::sphere(Vec3::ZERO, 10.).unwrap();
+    let mut s = imported(&sphere, 0.01);
+    run(&mut s, "mesh.convert", json!({"body":"Mesh","method":"auto"}));
+    assert!(!s.model.state().body("Mesh").unwrap().body.is_mesh());
+    assert!(s.model.results.iter().all(|r| r.error.is_none()), "{:?}", s.model.results);
+    let exact = 4. / 3. * std::f64::consts::PI * 1000.;
+    assert!((volume(&mut s) - exact).abs() / exact < 0.01);
+    assert!(s.doc.to_json().contains("Convert Mesh (Mesh2STEP)"));
+}

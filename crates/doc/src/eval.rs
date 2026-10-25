@@ -6958,19 +6958,30 @@ fn eval_feature(doc: &Document, vals: &BTreeMap<String, Value>, f: &Feature, st:
             if doc.model_body_component(source) != f.component {
                 return Err(DocError::Invalid("activate the mesh body's component before converting it".into()));
             }
+            // Mesh2STEP's warnings, the first three, as the feature's warning.
+            let general = |warning: &mut Option<String>| -> Result<kernel::Body> {
+                let (converted, info) = kernel::convert_general_mesh(&source.body, Some(tolerance))?;
+                if !info.warnings.is_empty() {
+                    let n = info.warnings.len();
+                    let shown: Vec<&str> = info.warnings.iter().take(3).map(String::as_str).collect();
+                    let more = if n > 3 { format!(" (+{} more)", n - 3) } else { String::new() };
+                    *warning = Some(format!("{}{more}", shown.join("; ")));
+                }
+                Ok(converted)
+            };
             let converted = match method.as_str() {
                 "" | "prismatic" => kernel::convert_prismatic_mesh(&source.body, tolerance)?,
-                "mesh2step" => {
-                    let (converted, info) = kernel::convert_general_mesh(&source.body, Some(tolerance))?;
-                    if !info.warnings.is_empty() {
-                        let n = info.warnings.len();
-                        let shown: Vec<&str> = info.warnings.iter().take(3).map(String::as_str).collect();
-                        let more = if n > 3 { format!(" (+{} more)", n - 3) } else { String::new() };
-                        *warning = Some(format!("{}{more}", shown.join("; ")));
+                "mesh2step" => general(warning)?,
+                // The exact prismatic reconstruction when the mesh is a straight extrusion
+                // (0 = automatic tolerance, which for it is 0.05 mm), else Mesh2STEP.
+                "auto" => {
+                    let prismatic_tolerance = if tolerance > 0.0 { tolerance.min(1.0) } else { 0.05 };
+                    match kernel::convert_prismatic_mesh(&source.body, prismatic_tolerance) {
+                        Ok(converted) => converted,
+                        Err(_) => general(warning)?,
                     }
-                    converted
                 }
-                other => return Err(DocError::Invalid(format!("unknown mesh conversion method `{other}` (prismatic or mesh2step)"))),
+                other => return Err(DocError::Invalid(format!("unknown mesh conversion method `{other}` (auto, prismatic or mesh2step)"))),
             };
             let converted = converted.with_color(source.body.color());
             let result = ModelBody::new(source.name.clone(), converted, f.id);

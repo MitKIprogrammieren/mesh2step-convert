@@ -680,21 +680,18 @@ fn additional_rows(app: &mut SolveApp, d: &mut Dialog, ui: &mut egui::Ui) -> boo
         Kind::PathPlane { t, .. } => {
             enter |= expr_row(ui, "Position (0 to 1)", t);
         }
-        Kind::MeshConvert { tolerance, general } => {
-            form_row(ui, "Method", |ui| {
-                let mut i = usize::from(*general);
-                ui_kit::segmented(ui, &mut i, &["Prismatic", "Mesh2STEP"], Default::default());
-                if (i == 1) != *general {
-                    *general = i == 1;
-                    // Each method's own default: automatic for Mesh2STEP, 0.05 mm for prismatic.
-                    *tolerance = if *general { "0 mm" } else { "0.05 mm" }.into();
-                }
-            });
+        Kind::MeshConvert { tolerance, method } => {
+            let before = *method;
+            choice_row(ui, "Method", "mesh_convert_method", method, &["Automatic", "Prismatic", "Mesh2STEP"]);
+            if *method != before {
+                // Prismatic needs a tolerance (0.05 mm); the others choose one at 0 mm.
+                *tolerance = if *method == 1 { "0.05 mm" } else { "0 mm" }.into();
+            }
             form_row(ui, "Tolerance", |ui| enter |= field(ui, tolerance));
-            let note = if *general {
-                "Any shape: planes, cylinders, cones, spheres, tori and freeform faces. 0 mm = automatic."
-            } else {
-                "Constant-section parts only (one profile extruded straight)."
+            let note = match method {
+                1 => "Straight extrusions only.",
+                2 => "Any shape.",
+                _ => "Picks the method from the shape.",
             };
             let t = Tokens::get();
             ui.label(RichText::new(tr(note)).color(t.text_dim).size(t.font_small));
