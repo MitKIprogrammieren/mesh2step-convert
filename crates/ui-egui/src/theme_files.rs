@@ -525,7 +525,7 @@ pub fn export(name: &str, base: Base, t: &Tokens) -> Value {
 }
 
 /// The theme files that come with SolidCraft (original files; Gruvbox, Tokyo Night, Solarized, Nord, Nosferatu and Catppuccin map open-source palettes, MIT).
-const BUILTIN: [(&str, &str); 20] = [
+const BUILTIN: [(&str, &str); 22] = [
     ("gruvbox-dark", include_str!("../../../assets/styles/ui/themes/gruvbox-dark.json")),
     ("gruvbox-dark-hard", include_str!("../../../assets/styles/ui/themes/gruvbox-dark-hard.json")),
     ("gruvbox-dark-soft", include_str!("../../../assets/styles/ui/themes/gruvbox-dark-soft.json")),
@@ -546,6 +546,8 @@ const BUILTIN: [(&str, &str); 20] = [
     ("graphite", include_str!("../../../assets/styles/ui/themes/graphite.json")),
     ("nosferatu", include_str!("../../../assets/styles/ui/themes/nosferatu.json")),
     ("catppuccin-mocha", include_str!("../../../assets/styles/ui/themes/catppuccin-mocha.json")),
+    ("bambu", include_str!("../../../assets/styles/ui/themes/bambu.json")),
+    ("bambu-dark", include_str!("../../../assets/styles/ui/themes/bambu-dark.json")),
 ];
 
 /// The built-in themes, read once (one that fails to read is left out; a test reads them all).

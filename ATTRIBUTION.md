@@ -196,6 +196,8 @@ Editable drawing code, native projects and shipped exports are collected under `
 | assets/styles/ui/themes/nord.json | SolidCraft contributors | original SolidCraft theme file adapting the colours of a published palette (Nord by Sven Greb and the Nord contributors, https://github.com/nordtheme/nord, MIT) | MIT OR Apache-2.0 |
 | assets/styles/ui/themes/high-contrast.json | SolidCraft contributors | original SolidCraft theme file | MIT OR Apache-2.0 |
 | assets/styles/ui/themes/graphite.json | SolidCraft contributors | original SolidCraft theme file | MIT OR Apache-2.0 |
+| assets/styles/ui/themes/bambu.json | MitKIprogrammieren | original theme file (green accent, light) | MIT OR Apache-2.0 |
+| assets/styles/ui/themes/bambu-dark.json | MitKIprogrammieren | original theme file (green accent, dark) | MIT OR Apache-2.0 |
 | assets/styles/ui/themes/nosferatu.json | SolidCraft contributors | original SolidCraft theme file adapting the colours of a published palette (Dracula by Zeno Rocha and the Dracula Theme contributors, https://github.com/dracula/dracula-theme, MIT) | MIT OR Apache-2.0 |
 | assets/styles/ui/themes/catppuccin-mocha.json | SolidCraft contributors | original SolidCraft theme file adapting the colours of a published palette (Catppuccin by the Catppuccin organisation, https://github.com/catppuccin/catppuccin, MIT) | MIT OR Apache-2.0 |
 | assets/styles/web/loading-logo.svg | SolidCraft contributors | Animation of the SolidCraft mark, built from the paths and gradients of assets/icons/app/macos/source/SolidCraft.icon/Assets/03-solid-blue-cutout.svg; original animation | MIT OR Apache-2.0 |
